@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sleep On It</string>
+    <string name="notification_channel_name">Purchase Reminders</string>
+    <string name="notification_channel_desc">Reminds you when it\'s time to decide on a purchase</string>
+</resources>
