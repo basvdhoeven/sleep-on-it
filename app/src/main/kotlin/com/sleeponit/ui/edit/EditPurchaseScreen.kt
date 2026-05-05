@@ -1,8 +1,7 @@
-package com.sleeponit.ui.add
+package com.sleeponit.ui.edit
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,50 +18,61 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sleeponit.domain.model.SleepDuration
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddPurchaseScreen(
+fun EditPurchaseScreen(
     onDone: () -> Unit,
-    viewModel: AddPurchaseViewModel = hiltViewModel()
+    viewModel: EditPurchaseViewModel = hiltViewModel()
 ) {
+    val purchase by viewModel.purchase.collectAsStateWithLifecycle()
     val currencySymbol by viewModel.currencySymbol.collectAsStateWithLifecycle()
-    var name by remember { mutableStateOf("") }
-    var price by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
-    var selectedDuration by remember { mutableStateOf<SleepDuration?>(SleepDuration.THREE_DAYS) }
-    var customSleepUntil by remember { mutableStateOf<Long?>(null) }
+
+    var name by rememberSaveable { mutableStateOf("") }
+    var price by rememberSaveable { mutableStateOf("") }
+    var notes by rememberSaveable { mutableStateOf("") }
+    var sleepUntil by remember { mutableStateOf(System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000L) }
+    var initialized by rememberSaveable { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+
+    LaunchedEffect(purchase) {
+        if (!initialized && purchase != null) {
+            name = purchase!!.name
+            price = purchase!!.price?.toString() ?: ""
+            notes = purchase!!.notes
+            sleepUntil = purchase!!.sleepUntil
+            initialized = true
+        }
+    }
 
     val dateFormatter = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("New Purchase") },
+                title = { Text("Edit Purchase") },
                 navigationIcon = {
                     IconButton(onClick = onDone) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -103,40 +113,17 @@ fun AddPurchaseScreen(
                 minLines = 3
             )
 
-            Text("Sleep for…", style = MaterialTheme.typography.labelLarge)
-            SleepDuration.entries.forEach { duration ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    RadioButton(
-                        selected = selectedDuration == duration,
-                        onClick = { selectedDuration = duration }
-                    )
-                    Text(duration.label, modifier = Modifier.padding(start = 4.dp))
-                }
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            OutlinedButton(
+                onClick = { showDatePicker = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                RadioButton(
-                    selected = selectedDuration == null,
-                    onClick = { showDatePicker = true }
-                )
-                val customLabel = customSleepUntil?.let { "Custom: ${dateFormatter.format(Date(it))}" }
-                    ?: "Custom date…"
-                Text(customLabel, modifier = Modifier.padding(start = 4.dp))
+                Text("Decide by: ${dateFormatter.format(Date(sleepUntil))}")
             }
 
             Spacer(Modifier.height(4.dp))
             Button(
                 onClick = {
-                    val now = System.currentTimeMillis()
-                    val sleepUntil = selectedDuration?.let { now + it.millis }
-                        ?: customSleepUntil
-                        ?: (now + SleepDuration.THREE_DAYS.millis)
-                    viewModel.save(
+                    viewModel.update(
                         name = name.trim(),
                         price = price.toDoubleOrNull(),
                         notes = notes.trim(),
@@ -147,23 +134,18 @@ fun AddPurchaseScreen(
                 enabled = name.isNotBlank(),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Start sleeping on it")
+                Text("Save changes")
             }
         }
     }
 
     if (showDatePicker) {
-        val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = customSleepUntil ?: System.currentTimeMillis()
-        )
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = sleepUntil)
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let {
-                        customSleepUntil = it
-                        selectedDuration = null
-                    }
+                    datePickerState.selectedDateMillis?.let { sleepUntil = it }
                     showDatePicker = false
                 }) { Text("OK") }
             },

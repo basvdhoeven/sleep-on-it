@@ -10,6 +10,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.sleeponit.MainActivity
 import com.sleeponit.SleepOnItApp
+import com.sleeponit.domain.model.Decision
+import com.sleeponit.receiver.DecisionReceiver
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -23,11 +25,31 @@ class ReminderWorker @AssistedInject constructor(
         val id = inputData.getLong(KEY_ID, -1L)
         val name = inputData.getString(KEY_NAME) ?: return Result.failure()
 
-        val intent = Intent(applicationContext, MainActivity::class.java).apply {
+        val openIntent = Intent(applicationContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
-        val pendingIntent = PendingIntent.getActivity(
-            applicationContext, id.toInt(), intent,
+        val openPendingIntent = PendingIntent.getActivity(
+            applicationContext, id.toInt(), openIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val buyPendingIntent = PendingIntent.getBroadcast(
+            applicationContext,
+            (id * 2).toInt(),
+            Intent(applicationContext, DecisionReceiver::class.java).apply {
+                putExtra(DecisionReceiver.EXTRA_PURCHASE_ID, id)
+                putExtra(DecisionReceiver.EXTRA_DECISION, Decision.BUY.name)
+            },
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val skipPendingIntent = PendingIntent.getBroadcast(
+            applicationContext,
+            (id * 2 + 1).toInt(),
+            Intent(applicationContext, DecisionReceiver::class.java).apply {
+                putExtra(DecisionReceiver.EXTRA_PURCHASE_ID, id)
+                putExtra(DecisionReceiver.EXTRA_DECISION, Decision.SKIP.name)
+            },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
@@ -36,8 +58,10 @@ class ReminderWorker @AssistedInject constructor(
             .setContentTitle("Time to decide!")
             .setContentText("Should you buy \"$name\"?")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(pendingIntent)
+            .setContentIntent(openPendingIntent)
             .setAutoCancel(true)
+            .addAction(0, "Buy it", buyPendingIntent)
+            .addAction(0, "Skip it", skipPendingIntent)
             .build()
 
         (applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)

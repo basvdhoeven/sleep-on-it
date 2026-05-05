@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="180dp"
+    android:height="180dp"
+    android:viewportWidth="180"
+    android:viewportHeight="180">
+
+    <!-- Moon -->
+    <path
+        android:fillColor="#CAC4D0"
+        android:pathData="M110,28 A28,28 0 1 1 110,84 A20,20 0 1 0 110,28 Z" />
+
+    <!-- Shopping bag body -->
+    <path
+        android:fillColor="#E8DEF8"
+        android:strokeColor="#6750A4"
+        android:strokeWidth="4"
+        android:pathData="M45,88 L45,155 L135,155 L135,88 Z" />
+
+    <!-- Bag handle -->
+    <path
+        android:strokeColor="#6750A4"
+        android:strokeWidth="5"
+        android:fillColor="#00000000"
+        android:pathData="M65,88 Q65,65 90,65 Q115,65 115,88" />
+
+    <!-- Z letters (sleep) on the bag -->
+    <path
+        android:fillColor="#6750A4"
+        android:pathData="M72,108 L95,108 L72,124 L95,124 M72,108 L72,112 M95,108 L95,112 M72,124 L72,128 M95,124 L95,128" />
+    <path
+        android:fillColor="#9E77D4"
+        android:pathData="M100,100 L115,100 L100,112 L115,112 M100,100 L100,103 M115,100 L115,103 M100,112 L100,115 M115,112 L115,115" />
+
+    <!-- Stars -->
+    <path
+        android:fillColor="#CAC4D0"
+        android:pathData="M45,35 L47,41 L53,41 L48,45 L50,51 L45,47 L40,51 L42,45 L37,41 L43,41 Z" />
+    <path
+        android:fillColor="#CAC4D0"
+        android:pathData="M155,55 L156,58 L159,58 L157,60 L158,63 L155,61 L152,63 L153,60 L151,58 L154,58 Z" />
+    <path
+        android:fillColor="#E8DEF8"
+        android:pathData="M30,70 L31,73 L34,73 L32,75 L33,78 L30,76 L27,78 L28,75 L26,73 L29,73 Z" />
+</vector>

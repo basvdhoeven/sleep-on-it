@@ -1,10 +1,10 @@
-package com.sleeponit.ui.add
+package com.sleeponit.ui.edit
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sleeponit.data.repository.PurchaseRepository
 import com.sleeponit.data.repository.UserPreferencesRepository
-import com.sleeponit.domain.model.Purchase
 import com.sleeponit.domain.model.currencySymbol
 import com.sleeponit.worker.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,27 +15,31 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AddPurchaseViewModel @Inject constructor(
+class EditPurchaseViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val repository: PurchaseRepository,
     private val reminderScheduler: ReminderScheduler,
     prefs: UserPreferencesRepository
 ) : ViewModel() {
 
+    private val purchaseId: Long = checkNotNull(savedStateHandle["purchaseId"])
+
+    val purchase = repository.purchases
+        .map { list -> list.find { it.id == purchaseId } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
     val currencySymbol = prefs.currencyCode
         .map { currencySymbol(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), "$")
 
-    fun save(name: String, price: Double?, notes: String, sleepUntil: Long) {
-        val purchase = Purchase(
-            name = name,
-            price = price,
-            notes = notes,
-            createdAt = System.currentTimeMillis(),
-            sleepUntil = sleepUntil
-        )
+    fun update(name: String, price: Double?, notes: String, sleepUntil: Long) {
         viewModelScope.launch {
-            val id = repository.addPurchase(purchase)
-            reminderScheduler.schedule(id, name, sleepUntil)
+            val current = purchase.value ?: return@launch
+            repository.updatePurchase(current.copy(name = name, price = price, notes = notes, sleepUntil = sleepUntil))
+            reminderScheduler.cancel(purchaseId)
+            if (sleepUntil > System.currentTimeMillis() && current.decision == null) {
+                reminderScheduler.schedule(purchaseId, name, sleepUntil)
+            }
         }
     }
 }

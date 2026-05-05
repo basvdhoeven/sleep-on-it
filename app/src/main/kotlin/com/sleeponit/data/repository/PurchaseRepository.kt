@@ -21,7 +21,14 @@ class PurchaseRepository @Inject constructor(private val dao: PurchaseDao) {
         dao.update(entity.copy(decision = decision.name))
     }
 
+    suspend fun updatePurchase(purchase: Purchase) = dao.update(purchase.toEntity())
+
     suspend fun deletePurchase(purchase: Purchase) = dao.delete(purchase.toEntity())
+
+    suspend fun snoozePurchase(id: Long, additionalMillis: Long) {
+        val entity = dao.getById(id) ?: return
+        dao.update(entity.copy(sleepUntil = entity.sleepUntil + additionalMillis))
+    }
 
     private fun PurchaseEntity.toDomain() = Purchase(
         id = id, name = name, price = price, notes = notes,
