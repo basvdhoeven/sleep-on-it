@@ -1,14 +1,36 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path
-        android:fillColor="#FF6B35"
-        android:pathData="M54,14 A40,40 0 1 1 54,94 A40,40 0 1 1 54,14 Z" />
-    <!-- Z letter for "Zzz" sleep icon -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M38,36 L70,36 L70,42 L48,62 L70,62 L70,72 L38,72 L38,66 L60,46 L38,46 Z" />
+    android:width="10.885dp"
+    android:height="9.674dp"
+    android:viewportWidth="10.885"
+    android:viewportHeight="9.674">
+  <path
+      android:pathData="m2.612,9.226q0,0.052 -0.006,0.091 -0.006,0.036 -0.019,0.061 -0.011,0.025 -0.03,0.036 -0.017,0.011 -0.041,0.011L0.41,9.424q-0.072,0 -0.116,-0.044 -0.044,-0.044 -0.044,-0.141v-0.102q0,-0.036 0.003,-0.066 0.006,-0.03 0.019,-0.063 0.014,-0.036 0.039,-0.077 0.025,-0.044 0.061,-0.102L2.017,6.255L0.391,6.255q-0.028,0 -0.047,-0.011 -0.019,-0.011 -0.033,-0.033 -0.011,-0.025 -0.017,-0.061 -0.006,-0.039 -0.006,-0.088 0,-0.055 0.006,-0.094 0.006,-0.039 0.017,-0.063 0.014,-0.025 0.033,-0.036 0.019,-0.011 0.047,-0.011h1.984q0.074,0 0.116,0.044 0.044,0.041 0.044,0.13v0.107q0,0.044 -0.006,0.08 -0.006,0.033 -0.019,0.069 -0.014,0.036 -0.039,0.077 -0.022,0.041 -0.061,0.096l-1.637,2.563h1.742q0.047,0 0.072,0.047 0.025,0.047 0.025,0.154z"
+      android:strokeWidth="0.5"
+      android:fillColor="#0000ff"
+      android:strokeColor="#0000ff"/>
+  <path
+      android:pathData="m10.635,5.302q0,0.079 -0.008,0.136 -0.008,0.054 -0.029,0.091 -0.017,0.037 -0.045,0.054 -0.025,0.017 -0.062,0.017L7.332,5.6q-0.107,0 -0.174,-0.066 -0.066,-0.066 -0.066,-0.211L7.092,5.17q0,-0.054 0.004,-0.099 0.008,-0.045 0.029,-0.095 0.021,-0.054 0.058,-0.116 0.037,-0.066 0.091,-0.153L9.742,0.845h-2.439q-0.041,0 -0.07,-0.017 -0.029,-0.017 -0.05,-0.05 -0.017,-0.037 -0.025,-0.091 -0.008,-0.058 -0.008,-0.132 0,-0.083 0.008,-0.141 0.008,-0.058 0.025,-0.095 0.021,-0.037 0.05,-0.054 0.029,-0.017 0.07,-0.017h2.977q0.112,0 0.174,0.066 0.066,0.062 0.066,0.194L10.519,0.672q0,0.066 -0.008,0.12 -0.008,0.05 -0.029,0.103 -0.021,0.054 -0.058,0.116 -0.033,0.062 -0.091,0.145l-2.456,3.845h2.613q0.07,0 0.107,0.07 0.037,0.07 0.037,0.232z"
+      android:strokeWidth="0.5"
+      android:fillColor="#0000ff"
+      android:strokeColor="#0000ff"/>
+  <path
+      android:pathData="m6.556,6.508q0,0.065 -0.007,0.114 -0.007,0.045 -0.024,0.076 -0.014,0.031 -0.038,0.045 -0.021,0.014 -0.052,0.014L3.804,6.756q-0.09,0 -0.145,-0.055 -0.055,-0.055 -0.055,-0.176v-0.127q0,-0.045 0.003,-0.083 0.007,-0.038 0.024,-0.079 0.017,-0.045 0.048,-0.096 0.031,-0.055 0.076,-0.127l2.057,-3.218h-2.033q-0.034,0 -0.059,-0.014 -0.024,-0.014 -0.041,-0.041 -0.014,-0.031 -0.021,-0.076 -0.007,-0.048 -0.007,-0.11 0,-0.069 0.007,-0.117 0.007,-0.048 0.021,-0.079 0.017,-0.031 0.041,-0.045 0.024,-0.014 0.059,-0.014h2.48q0.093,0 0.145,0.055 0.055,0.052 0.055,0.162v0.134q0,0.055 -0.007,0.1 -0.007,0.041 -0.024,0.086 -0.017,0.045 -0.048,0.096 -0.028,0.052 -0.076,0.121l-2.046,3.204h2.177q0.059,0 0.09,0.059 0.031,0.059 0.031,0.193z"
+      android:strokeWidth="0.5"
+      android:fillColor="#0000ff"
+      android:strokeColor="#0000ff"/>
 </vector>
