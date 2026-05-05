@@ -18,7 +18,7 @@ class UserPreferencesRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     val currencyCode: Flow<String> = context.userPreferencesDataStore.data
-        .map { it[CURRENCY_CODE_KEY] ?: "USD" }
+        .map { it[CURRENCY_CODE_KEY] ?: "EUR" }
 
     suspend fun setCurrencyCode(code: String) {
         context.userPreferencesDataStore.edit { it[CURRENCY_CODE_KEY] = code }

@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -73,6 +74,8 @@ fun PurchaseListScreen(
     val purchases by viewModel.purchases.collectAsStateWithLifecycle()
     val currencyCode by viewModel.currencyCode.collectAsStateWithLifecycle()
     val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
+    val totalSaved by viewModel.totalSaved.collectAsStateWithLifecycle()
+
     val now = System.currentTimeMillis()
     var pendingDelete by remember { mutableStateOf<Purchase?>(null) }
     var pendingSnooze by remember { mutableStateOf<Purchase?>(null) }
@@ -113,7 +116,7 @@ fun PurchaseListScreen(
                     modifier = Modifier.size(180.dp)
                 )
                 Spacer(Modifier.height(16.dp))
-                Text("No purchases yet.", style = MaterialTheme.typography.titleMedium)
+                Text("No potential purchases yet.", style = MaterialTheme.typography.titleMedium)
                 Text(
                     "Tap + to add one and sleep on it.",
                     style = MaterialTheme.typography.bodyMedium,
@@ -140,6 +143,33 @@ fun PurchaseListScreen(
                                 label = { Text(order.label) }
                             )
                         }
+                    }
+                }
+                if (totalSaved > 0) {
+                    item {
+                      Card(
+                            modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            )
+                        ) {
+                        Row(
+                            modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                        ) {
+                        Text("Total saved", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            formatPrice(totalSaved, currencyCode),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                            )
+                        }
+                      }
                     }
                 }
                 if (readyToDecide.isNotEmpty()) {
@@ -318,9 +348,6 @@ private fun PurchaseCard(
                 StatusChip(purchase = purchase, now = now)
                 IconButton(onClick = onEdit) {
                     Icon(Icons.Default.Edit, contentDescription = "Edit")
-                }
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete")
                 }
             }
             if (purchase.notes.isNotBlank()) {

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sleeponit.data.repository.PurchaseRepository
 import com.sleeponit.data.repository.UserPreferencesRepository
+import com.sleeponit.domain.model.Decision
 import com.sleeponit.domain.model.currencySymbol
 import com.sleeponit.worker.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,5 +42,24 @@ class EditPurchaseViewModel @Inject constructor(
                 reminderScheduler.schedule(purchaseId, name, sleepUntil)
             }
         }
+    }
+
+    fun decide(decision: Decision) = viewModelScope.launch {
+        repository.recordDecision(purchaseId, decision)
+        reminderScheduler.cancel(purchaseId)
+    }
+
+    fun undecide() = viewModelScope.launch {
+        val current = purchase.value ?: return@launch
+        repository.undecide(purchaseId)
+        if (current.sleepUntil > System.currentTimeMillis()) {
+            reminderScheduler.schedule(purchaseId, current.name, current.sleepUntil)
+        }
+    }
+
+    fun delete() = viewModelScope.launch {
+        val current = purchase.value ?: return@launch
+        repository.deletePurchase(current)
+        reminderScheduler.cancel(purchaseId)
     }
 }

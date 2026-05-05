@@ -2,6 +2,7 @@ package com.sleeponit.ui.edit
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,12 +13,16 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -37,6 +42,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sleeponit.domain.model.Decision
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -56,6 +62,7 @@ fun EditPurchaseScreen(
     var sleepUntil by remember { mutableStateOf(System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000L) }
     var initialized by rememberSaveable { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     LaunchedEffect(purchase) {
         if (!initialized && purchase != null) {
@@ -68,6 +75,7 @@ fun EditPurchaseScreen(
     }
 
     val dateFormatter = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
+    val decided = purchase?.decision != null
 
     Scaffold(
         topBar = {
@@ -76,6 +84,15 @@ fun EditPurchaseScreen(
                 navigationIcon = {
                     IconButton(onClick = onDone) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showDeleteConfirm = true }) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             )
@@ -136,6 +153,36 @@ fun EditPurchaseScreen(
             ) {
                 Text("Save changes")
             }
+
+            Spacer(Modifier.height(4.dp))
+            HorizontalDivider()
+            Spacer(Modifier.height(4.dp))
+
+            if (decided) {
+                val label = if (purchase!!.decision == Decision.BUY) "Bought" else "Skipped"
+                Text("Decision: $label", style = MaterialTheme.typography.labelLarge)
+                OutlinedButton(
+                    onClick = { viewModel.undecide(); onDone() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Undo decision")
+                }
+            } else {
+                Text("Decide now", style = MaterialTheme.typography.labelLarge)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { viewModel.decide(Decision.BUY); onDone() },
+                        modifier = Modifier.weight(1f)
+                    ) { Text("Buy it") }
+                    OutlinedButton(
+                        onClick = { viewModel.decide(Decision.SKIP); onDone() },
+                        modifier = Modifier.weight(1f)
+                    ) { Text("Skip it") }
+                }
+            }
         }
     }
 
@@ -155,5 +202,25 @@ fun EditPurchaseScreen(
         ) {
             DatePicker(state = datePickerState)
         }
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Delete \"${purchase?.name}\"?") },
+            text = { Text("This will permanently remove it from your list.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.delete()
+                    showDeleteConfirm = false
+                    onDone()
+                }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) { Text("Cancel") }
+            }
+        )
     }
 }

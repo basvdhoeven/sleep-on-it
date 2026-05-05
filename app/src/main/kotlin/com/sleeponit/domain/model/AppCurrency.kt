@@ -3,8 +3,8 @@ package com.sleeponit.domain.model
 data class AppCurrency(val code: String, val symbol: String, val name: String)
 
 val CURRENCIES = listOf(
-    AppCurrency("USD", "$",   "US Dollar"),
     AppCurrency("EUR", "€",   "Euro"),
+    AppCurrency("USD", "$",   "US Dollar"),
     AppCurrency("GBP", "£",   "British Pound"),
     AppCurrency("JPY", "¥",   "Japanese Yen"),
     AppCurrency("CAD", "CA$", "Canadian Dollar"),

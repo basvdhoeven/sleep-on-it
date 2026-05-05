@@ -21,6 +21,11 @@ class PurchaseRepository @Inject constructor(private val dao: PurchaseDao) {
         dao.update(entity.copy(decision = decision.name))
     }
 
+    suspend fun undecide(id: Long) {
+        val entity = dao.getById(id) ?: return
+        dao.update(entity.copy(decision = null))
+    }
+
     suspend fun updatePurchase(purchase: Purchase) = dao.update(purchase.toEntity())
 
     suspend fun deletePurchase(purchase: Purchase) = dao.delete(purchase.toEntity())
