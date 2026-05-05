@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sleeponit.domain.model.SleepDuration
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,6 +42,7 @@ fun AddPurchaseScreen(
     onDone: () -> Unit,
     viewModel: AddPurchaseViewModel = hiltViewModel()
 ) {
+    val currencySymbol by viewModel.currencySymbol.collectAsStateWithLifecycle()
     var name by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
@@ -77,7 +79,7 @@ fun AddPurchaseScreen(
                 value = price,
                 onValueChange = { price = it },
                 label = { Text("Price (optional)") },
-                prefix = { Text("$") },
+                prefix = { Text(currencySymbol) },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true

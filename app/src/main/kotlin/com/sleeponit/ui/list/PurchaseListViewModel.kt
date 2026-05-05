@@ -3,6 +3,7 @@ package com.sleeponit.ui.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sleeponit.data.repository.PurchaseRepository
+import com.sleeponit.data.repository.UserPreferencesRepository
 import com.sleeponit.domain.model.Decision
 import com.sleeponit.domain.model.Purchase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,8 +14,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PurchaseListViewModel @Inject constructor(
-    private val repository: PurchaseRepository
+    private val repository: PurchaseRepository,
+    prefs: UserPreferencesRepository
 ) : ViewModel() {
+
+    val currencyCode = prefs.currencyCode.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        "USD"
+    )
 
     val purchases = repository.purchases.stateIn(
         viewModelScope,

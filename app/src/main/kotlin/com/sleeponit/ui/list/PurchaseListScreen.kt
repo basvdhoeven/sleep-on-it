@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sleeponit.domain.model.Decision
 import com.sleeponit.domain.model.Purchase
+import com.sleeponit.domain.model.currencySymbol
 import java.text.NumberFormat
 import java.util.concurrent.TimeUnit
 
@@ -44,9 +46,11 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun PurchaseListScreen(
     onAddClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     viewModel: PurchaseListViewModel = hiltViewModel()
 ) {
     val purchases by viewModel.purchases.collectAsStateWithLifecycle()
+    val currencyCode by viewModel.currencyCode.collectAsStateWithLifecycle()
     val now = System.currentTimeMillis()
 
     val readyToDecide = purchases.filter { it.decision == null && it.sleepUntil <= now }
@@ -54,7 +58,16 @@ fun PurchaseListScreen(
     val decided = purchases.filter { it.decision != null }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Sleep On It") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Sleep On It") },
+                actions = {
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
+                }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddClick) {
                 Icon(Icons.Default.Add, contentDescription = "Add purchase")
@@ -83,6 +96,7 @@ fun PurchaseListScreen(
                     items(readyToDecide, key = { it.id }) { purchase ->
                         PurchaseCard(
                             purchase = purchase,
+                            currencyCode = currencyCode,
                             onBuy = { viewModel.decide(purchase, Decision.BUY) },
                             onSkip = { viewModel.decide(purchase, Decision.SKIP) },
                             onDelete = { viewModel.delete(purchase) }
@@ -92,13 +106,13 @@ fun PurchaseListScreen(
                 if (sleeping.isNotEmpty()) {
                     item { SectionHeader("Sleeping 💤") }
                     items(sleeping, key = { it.id }) { purchase ->
-                        PurchaseCard(purchase = purchase, onDelete = { viewModel.delete(purchase) })
+                        PurchaseCard(purchase = purchase, currencyCode = currencyCode, onDelete = { viewModel.delete(purchase) })
                     }
                 }
                 if (decided.isNotEmpty()) {
                     item { SectionHeader("Decided") }
                     items(decided, key = { it.id }) { purchase ->
-                        PurchaseCard(purchase = purchase, onDelete = { viewModel.delete(purchase) })
+                        PurchaseCard(purchase = purchase, currencyCode = currencyCode, onDelete = { viewModel.delete(purchase) })
                     }
                 }
             }
@@ -119,12 +133,12 @@ private fun SectionHeader(title: String) {
 @Composable
 private fun PurchaseCard(
     purchase: Purchase,
+    currencyCode: String,
     onBuy: (() -> Unit)? = null,
     onSkip: (() -> Unit)? = null,
     onDelete: () -> Unit
 ) {
     val now = System.currentTimeMillis()
-    val currency = NumberFormat.getCurrencyInstance()
 
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -136,7 +150,7 @@ private fun PurchaseCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(purchase.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     purchase.price?.let {
-                        Text(currency.format(it), style = MaterialTheme.typography.bodyMedium)
+                        Text(formatPrice(it, currencyCode), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
                 StatusChip(purchase = purchase, now = now)
@@ -181,6 +195,12 @@ private fun StatusChip(purchase: Purchase, now: Long) {
             style = MaterialTheme.typography.labelSmall
         )
     }
+}
+
+private fun formatPrice(amount: Double, currencyCode: String): String {
+    val symbol = currencySymbol(currencyCode)
+    val nf = NumberFormat.getNumberInstance().apply { minimumFractionDigits = 2; maximumFractionDigits = 2 }
+    return "$symbol${nf.format(amount)}"
 }
 
 private fun formatTimeLeft(millis: Long): String {
