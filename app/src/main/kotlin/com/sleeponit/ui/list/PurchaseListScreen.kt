@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,9 +28,13 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +57,7 @@ fun PurchaseListScreen(
     val purchases by viewModel.purchases.collectAsStateWithLifecycle()
     val currencyCode by viewModel.currencyCode.collectAsStateWithLifecycle()
     val now = System.currentTimeMillis()
+    var pendingDelete by remember { mutableStateOf<Purchase?>(null) }
 
     val readyToDecide = purchases.filter { it.decision == null && it.sleepUntil <= now }
     val sleeping = purchases.filter { it.decision == null && it.sleepUntil > now }
@@ -99,24 +105,43 @@ fun PurchaseListScreen(
                             currencyCode = currencyCode,
                             onBuy = { viewModel.decide(purchase, Decision.BUY) },
                             onSkip = { viewModel.decide(purchase, Decision.SKIP) },
-                            onDelete = { viewModel.delete(purchase) }
+                            onDelete = { pendingDelete = purchase }
                         )
                     }
                 }
                 if (sleeping.isNotEmpty()) {
                     item { SectionHeader("Sleeping 💤") }
                     items(sleeping, key = { it.id }) { purchase ->
-                        PurchaseCard(purchase = purchase, currencyCode = currencyCode, onDelete = { viewModel.delete(purchase) })
+                        PurchaseCard(purchase = purchase, currencyCode = currencyCode, onDelete = { pendingDelete = purchase })
                     }
                 }
                 if (decided.isNotEmpty()) {
                     item { SectionHeader("Decided") }
                     items(decided, key = { it.id }) { purchase ->
-                        PurchaseCard(purchase = purchase, currencyCode = currencyCode, onDelete = { viewModel.delete(purchase) })
+                        PurchaseCard(purchase = purchase, currencyCode = currencyCode, onDelete = { pendingDelete = purchase })
                     }
                 }
             }
         }
+    }
+
+    pendingDelete?.let { purchase ->
+        AlertDialog(
+            onDismissRequest = { pendingDelete = null },
+            title = { Text("Delete \"${purchase.name}\"?") },
+            text = { Text("This will permanently remove it from your list.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.delete(purchase)
+                    pendingDelete = null
+                }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDelete = null }) { Text("Cancel") }
+            }
+        )
     }
 }
 
