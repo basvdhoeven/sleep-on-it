@@ -2,7 +2,6 @@ package com.sleeponit.ui.list
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -26,7 +24,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -50,12 +47,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sleeponit.R
 import com.sleeponit.domain.model.Decision
 import com.sleeponit.domain.model.Purchase
 import com.sleeponit.domain.model.currencySymbol
@@ -87,7 +82,7 @@ fun PurchaseListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Sleep On It") },
+                title = { Text("Sleep On It \uD83D\uDE34") },
                 actions = {
                     IconButton(onClick = onStatsClick) {
                         Icon(Icons.Filled.BarChart, contentDescription = "Statistics")
@@ -104,119 +99,72 @@ fun PurchaseListScreen(
             }
         }
     ) { padding ->
-        if (purchases.isEmpty()) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.ic_empty_purchases),
-                    contentDescription = null,
-                    modifier = Modifier.size(180.dp)
-                )
-                Spacer(Modifier.height(16.dp))
-                Text("No potential purchases yet.", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    "Tap + to add one and sleep on it.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(bottom = 88.dp)
+        ) {
+            stickyHeader {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    SortOrder.entries.forEach { order ->
+                        FilterChip(
+                            selected = sortOrder == order,
+                            onClick = { viewModel.setSortOrder(order) },
+                            label = { Text(order.label) }
+                        )
+                    }
+                }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(bottom = 88.dp)
-            ) {
-                stickyHeader {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        SortOrder.entries.forEach { order ->
-                            FilterChip(
-                                selected = sortOrder == order,
-                                onClick = { viewModel.setSortOrder(order) },
-                                label = { Text(order.label) }
-                            )
-                        }
+            if (readyToDecide.isNotEmpty()) {
+                item { SectionHeader("Ready to Decide 🔔") }
+                items(readyToDecide, key = { it.id }) { purchase ->
+                    SwipeToDeleteCard(onDelete = { pendingDelete = purchase }) {
+                        PurchaseCard(
+                            purchase = purchase,
+                            currencyCode = currencyCode,
+                            onBuy = { viewModel.decide(purchase, Decision.BUY) },
+                            onSkip = { viewModel.decide(purchase, Decision.SKIP) },
+                            onSnooze = { pendingSnooze = purchase },
+                            onEdit = { onEditClick(purchase) },
+                            onDelete = { pendingDelete = purchase }
+                        )
                     }
                 }
-                if (totalSaved > 0) {
-                    item {
-                      Card(
-                            modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 6.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                            )
-                        ) {
-                        Row(
-                            modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                        ) {
-                        Text("Total saved", style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            formatPrice(totalSaved, currencyCode),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                            )
-                        }
-                      }
+            }
+            if (sleeping.isNotEmpty()) {
+                item { SectionHeader("Sleeping 💤") }
+                items(sleeping, key = { it.id }) { purchase ->
+                    SwipeToDeleteCard(onDelete = { pendingDelete = purchase }) {
+                        PurchaseCard(
+                            purchase = purchase,
+                            currencyCode = currencyCode,
+                            onEdit = { onEditClick(purchase) },
+                            onDelete = { pendingDelete = purchase }
+                        )
                     }
                 }
-                if (readyToDecide.isNotEmpty()) {
-                    item { SectionHeader("Ready to Decide 🔔") }
-                    items(readyToDecide, key = { it.id }) { purchase ->
-                        SwipeToDeleteCard(onDelete = { pendingDelete = purchase }) {
-                            PurchaseCard(
-                                purchase = purchase,
-                                currencyCode = currencyCode,
-                                onBuy = { viewModel.decide(purchase, Decision.BUY) },
-                                onSkip = { viewModel.decide(purchase, Decision.SKIP) },
-                                onSnooze = { pendingSnooze = purchase },
-                                onEdit = { onEditClick(purchase) },
-                                onDelete = { pendingDelete = purchase }
-                            )
-                        }
-                    }
-                }
-                if (sleeping.isNotEmpty()) {
-                    item { SectionHeader("Sleeping 💤") }
-                    items(sleeping, key = { it.id }) { purchase ->
-                        SwipeToDeleteCard(onDelete = { pendingDelete = purchase }) {
-                            PurchaseCard(
-                                purchase = purchase,
-                                currencyCode = currencyCode,
-                                onEdit = { onEditClick(purchase) },
-                                onDelete = { pendingDelete = purchase }
-                            )
-                        }
-                    }
-                }
-                if (decided.isNotEmpty()) {
-                    item { SectionHeader("Decided") }
-                    items(decided, key = { it.id }) { purchase ->
-                        SwipeToDeleteCard(onDelete = { pendingDelete = purchase }) {
-                            PurchaseCard(
-                                purchase = purchase,
-                                currencyCode = currencyCode,
-                                onEdit = { onEditClick(purchase) },
-                                onDelete = { pendingDelete = purchase }
-                            )
-                        }
+            }
+            if (decided.isNotEmpty()) {
+                item { SectionHeader("Decided") }
+                items(decided, key = { it.id }) { purchase ->
+                    SwipeToDeleteCard(onDelete = { pendingDelete = purchase }) {
+                        PurchaseCard(
+                            purchase = purchase,
+                            currencyCode = currencyCode,
+                            onEdit = { onEditClick(purchase) },
+                            onDelete = { pendingDelete = purchase }
+                        )
                     }
                 }
             }
         }
     }
+
 
     pendingDelete?.let { purchase ->
         AlertDialog(

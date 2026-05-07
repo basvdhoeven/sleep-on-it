@@ -100,18 +100,6 @@ fun StatsScreen(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             }
-            StatCard(
-                label = "Avg. sleep before deciding",
-                value = if (s.avgSleepDays > 0) "%.1f days".format(s.avgSleepDays) else "—",
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
-            if (s.pendingCount > 0) {
-                StatCard(
-                    label = "Waiting to decide",
-                    value = "${s.pendingCount}",
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
-            }
         }
     }
 }

@@ -16,8 +16,6 @@ data class StatsData(
     val totalSpent: Double,
     val boughtCount: Int,
     val skippedCount: Int,
-    val pendingCount: Int,
-    val avgSleepDays: Double
 )
 
 @HiltViewModel
@@ -33,16 +31,11 @@ class StatsViewModel @Inject constructor(
     val stats = repository.purchases.map { purchases ->
         val bought = purchases.filter { it.decision == Decision.BUY }
         val skipped = purchases.filter { it.decision == Decision.SKIP }
-        val decided = bought + skipped
         StatsData(
             totalSaved = skipped.mapNotNull { it.price }.sum(),
             totalSpent = bought.mapNotNull { it.price }.sum(),
             boughtCount = bought.size,
             skippedCount = skipped.size,
-            pendingCount = purchases.count { it.decision == null },
-            avgSleepDays = if (decided.isNotEmpty())
-                decided.map { (it.sleepUntil - it.createdAt) / (24.0 * 60 * 60_000) }.average()
-            else 0.0
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 }
