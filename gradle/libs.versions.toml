@@ -1,5 +1,6 @@
 [versions]
 agp = "8.8.0"
+konfetti = "2.0.4"
 kotlin = "2.1.0"
 ksp = "2.1.0-1.0.29"
 hilt = "2.56"
@@ -50,6 +51,9 @@ hilt-work-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.
 
 # Navigation
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+
+# Konfetti
+konfetti-compose = { group = "nl.dionsegijn", name = "konfetti-compose", version.ref = "konfetti" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

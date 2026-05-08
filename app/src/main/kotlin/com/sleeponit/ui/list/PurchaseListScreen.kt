@@ -61,6 +61,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sleeponit.domain.model.Decision
 import com.sleeponit.domain.model.Purchase
 import com.sleeponit.domain.model.currencySymbol
+import nl.dionsegijn.konfetti.compose.KonfettiView
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
 import java.text.NumberFormat
 import java.util.concurrent.TimeUnit
 
@@ -87,11 +91,13 @@ fun PurchaseListScreen(
     }
     var pendingDelete by remember { mutableStateOf<Purchase?>(null) }
     var pendingSnooze by remember { mutableStateOf<Purchase?>(null) }
+    var showConfetti by remember { mutableStateOf(false) }
 
     val readyToDecide = purchases.filter { it.decision == null && it.sleepUntil <= now }
     val sleeping = purchases.filter { it.decision == null && it.sleepUntil > now }
     val decided = purchases.filter { it.decision != null }
 
+    Box(modifier = Modifier.fillMaxSize()) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -153,7 +159,7 @@ fun PurchaseListScreen(
                             purchase = purchase,
                             currencyCode = currencyCode,
                             onBuy = { viewModel.decide(purchase, Decision.BUY) },
-                            onSkip = { viewModel.decide(purchase, Decision.SKIP) },
+                            onSkip = { viewModel.decide(purchase, Decision.SKIP); showConfetti = true },
                             onSnooze = { pendingSnooze = purchase },
                             onEdit = { onEditClick(purchase) },
                             onDelete = { pendingDelete = purchase }
@@ -189,6 +195,29 @@ fun PurchaseListScreen(
             }
         }
     }
+    if (showConfetti) {
+        LaunchedEffect(Unit) {
+            delay(3_000L)
+            showConfetti = false
+        }
+        KonfettiView(
+            modifier = Modifier.fillMaxSize(),
+            parties = remember {
+                listOf(
+                    Party(
+                        speed = 0f,
+                        maxSpeed = 35f,
+                        damping = 0.9f,
+                        spread = 360,
+                        colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def, 0x4CAF50, 0x2196F3),
+                        position = Position.Relative(0.5, 0.3),
+                        emitter = Emitter(duration = 200, TimeUnit.MILLISECONDS).max(200)
+                    )
+                )
+            }
+        )
+    }
+    } // end Box
 
 
     pendingDelete?.let { purchase ->

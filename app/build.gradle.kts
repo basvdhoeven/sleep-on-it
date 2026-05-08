@@ -73,6 +73,9 @@ dependencies {
     // DataStore
     implementation(libs.datastore.preferences)
 
+    // Konfetti
+    implementation(libs.konfetti.compose)
+
     // WorkManager + Hilt integration
     implementation(libs.work.runtime.ktx)
     implementation(libs.hilt.work)
